@@ -6,11 +6,11 @@ not rated = 0
 max rating = 5
 '''
 
-#Modify into dictionaries
+
 movies = ['Frozen', 'Parasite', 'Beautiful Mind', 'Creed', 'Zorro']
 
 users = {
-    "Alice" : [3, 2, 0, 5, 0], #Modify the values into dictionaries
+    "Alice" : [3, 2, 0, 5, 0], 
     "Bob" : [2, 0, 4, 4, 5],
     "Charlie" : [0, 4, 5, 2, 3],
     "Dave" : [2, 5, 3, 0, 4],
@@ -48,29 +48,29 @@ def get_nearest_user(movie, user, user_ratings):
     idx = movies.index(movie)
     #save ratings of the user before being deleted
     user_all = user_ratings[user]
-    #save rating of the movie before being deleted
+    #save rating of the movie of the user before being deleted
     user_rating = user_ratings[user][idx]
 
     del user_ratings[user]
 
-    #Find distances from the specific movie
-    li_movie_distance=[]
+    #find distances from the specific movie
+    li_movie_distances=[]
     for key in user_ratings:
         if user_ratings[key][idx]:
             distance = 0
             distance += abs(user_ratings[key][idx] - user_rating)
-            li_movie_distance.append(distance)
+            li_movie_distances.append(distance)
         else:
-            li_movie_distance.append(0)
+            li_movie_distances.append(0)
     
 
-    #Find indicees of min distance in li_movie_distance
-    #Get an index without 0 rating
-    li_index_min_distance = [i for i, x in enumerate(li_movie_distance)
-                            if x == min(i for i in li_movie_distance 
+    #find indices of min distance in li_movie_distances
+    #get indices without 0 rating
+    li_index_min_distance = [i for i, x in enumerate(li_movie_distances)
+                            if x == min(i for i in li_movie_distances 
                             if i > 0)]
 
-    #calculate common_ratings and distance from other users
+    #calculate common_ratings and distance from the other users
     li_common_ratings_distance = []
     for key in user_ratings:
         common_ratings = 0
@@ -81,21 +81,21 @@ def get_nearest_user(movie, user, user_ratings):
                 common_ratings += 1
         li_common_ratings_distance.append((common_ratings, distance))
 
-    #Find nearest user by index
-    li_cr_d_min = []
+    #find nearest user by index
+    li_min_d = []
     for y in li_index_min_distance:
-        li_cr_d_min.append((y,li_common_ratings_distance[y]))
-    if li_cr_d_min.count(min(li_cr_d_min,key=lambda x: x[1][1])) == 1:
+        li_min_d.append((y,li_common_ratings_distance[y]))
+    if li_min_d.count(min(li_min_d,key=lambda x: x[1][1])) == 1:
         '''if there is one and only least distance'''
-        nearest_user_index = min(li_cr_d_min,key=lambda x: x[1][1])[0]
+        nearest_user_index = min(li_min_d,key=lambda x: x[1][1])[0]
         nearest_user = list(user_ratings)[nearest_user_index]
     else:
-        '''if there is a tie of min distance'''
-        li_cr_d_min2=[]
-        for i in li_cr_d_min:
-            if i[1][1] == min(li_cr_d_min,key=lambda x: x[1][1]):
-                li_cr_d_min2.append(i)
-        nearest_user_index = max(li_cr_d_min,key=lambda x: x[1][0])[0]
+        '''if there is a tie of min distance, then take the max common ratings'''
+        li_min_d_cr=[]
+        for i in li_min_d:
+            if i[1][1] == min(li_min_d,key=lambda x: x[1][1]):
+                li_min_d_cr.append(i)
+        nearest_user_index = max(li_min_d,key=lambda x: x[1][0])[0]
         nearest_user = list(user_ratings)[nearest_user_index]
     return nearest_user
 # print(get_nearest_user('Beautiful Mind',"Eve",users))
@@ -122,12 +122,4 @@ def get_recommendation(movie, user, user_ratings):
     else:
         recommend = False
     return recommend
-print(get_recommendation("Beautiful Mind","Eve",users))
-
-'''
-For homework, you have to modify the data structures
-of movies and users into dictionaries.
-
-In the real world, users rarely rate movies they have watched,
-hence the movie-user matrix will be sparse (many empty entries)
-'''
+print(get_recommendation("Frozen","Eve",users))
