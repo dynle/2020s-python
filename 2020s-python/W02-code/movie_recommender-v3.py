@@ -100,6 +100,25 @@ def get_nearest_user(movie, user, user_ratings):
     return nearest_user
 # print(get_nearest_user('Beautiful Mind',"Eve",users))
 
+"""answer"""
+def get_nearest_user(movie, user, user_ratings):
+    nearest_user = None
+    nearest_distance = None 
+    for o_user,o_ratings in user_ratings.items():
+        if o_user == user:
+            continue
+        if o_ratings[movie] > 0:
+            o_distance = get_distance(user_ratings[user], user_ratings[o_user])
+            if not o_distance[0]: # similar to o_distance[0] != 0
+                continue
+            if not nearest_user:
+                nearest_distance = o_distance
+                nearest_user = o_user
+            else:
+                if nearest_distance[1]/nearest_distance[0] > o_distance[1]/o_distance[0]:
+                    nearest_distance = o_distance
+                    nearest_user = o_user
+    return nearest_user
 
 
 def get_recommendation(movie, user, user_ratings):
@@ -123,3 +142,15 @@ def get_recommendation(movie, user, user_ratings):
         recommend = False
     return recommend
 print(get_recommendation("Frozen","Eve",users))
+
+"""answer"""
+# def get_recommendation(movie, user, user_ratings):
+    # recommend = False
+    # nearest_user = get_nearest_user(movie, user, user_ratings)
+    # if nearest_user:
+    #     nearest_rating = user_ratings[nearest_user][movie]
+    #     if nearest_rating >= 4:
+    #         recommend = True
+    
+    # # T2 Complete the code in this function
+    # return recommend
