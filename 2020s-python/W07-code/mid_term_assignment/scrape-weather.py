@@ -3,16 +3,17 @@ import csv
 import requests 
 from bs4 import BeautifulSoup as bs
 
+
 page = requests.get("https://darksky.net/forecast/37.2004,127.0958/si12/en")
 soup = bs(page.text,"html.parser")
 
 with open("weather_data.csv","w",encoding="utf-8", newline='') as f:
     wr = csv.writer(f)
-
     #store summary
     summary = soup.find("div",{"class":"summary"})
-    summary_find = re.compile("[A-Z][^\.!?]*[\.!?]")
-    summary_search = summary_find.findall(str(summary))
+    summary_find = re.compile("[\w\s.!?]*")
+    text = summary.get_text().strip().replace(u'\xa0', ' ')
+    summary_search = summary_find.findall(text)
 
     #store day
     day = soup.find_all(class_="name")
