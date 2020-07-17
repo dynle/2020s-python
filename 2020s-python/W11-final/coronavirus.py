@@ -7,18 +7,13 @@ import logging
 import sys
 import re
 from multiprocessing import Queue, Process
-# from collections import OrderedDict
 from quart import Quart, jsonify, request
 import webbrowser
 import os
 
 logging.basicConfig(format='%(asctime)s %(message)s',datefmt='%I:%M:%S', level=logging.INFO)
 
-# @app.route("/")
 def show_country_list():
-    # countries = sys.stdin.readline().split()
-    # q1 = request.args.get("q1")
-    # q2 = request.args.get("q2")
     page = requests.get("https://www.worldometers.info/coronavirus/")
     soup_country_list = bs(page.text,"html.parser")
 
@@ -27,27 +22,22 @@ def show_country_list():
     #country name
     country_name = [country_data[i].get_text() for i in range(len(country_data))]
 
-    #how to write the country name on terminal
+    #get the text of how to write country names on terminal
     country_name_terminal = [country_data[i].get("href").replace("country/","") for i in range(len(country_data))]
     country_text = re.compile("\w+[-*\w+]*")
     x = country_text.findall(str(country_name_terminal))
     
+    #list the top 100 countries where have the greatest number of overall cases
     country_list = {}
     for j in range(len(country_name)):
         country_list.update({f"{country_name[j]}":f"{x[j]}"})
-        # print({f"{country_name[j]}":f"{x[j]}"})
     
     i = 0
-    #list the top 100 countries 
     for key,value in country_list.items():
         print(f"{key}: {value}")
         i += 1
         if i == 99:
             break
-
-    # logging.info(country_list)
-    
-    # return jsonify({"Country List":country_list})
 
 async def get_text_from_url(num_input,url_input):
     logging.info(f'Send request to ... {url_input}\n')
@@ -84,7 +74,6 @@ async def get_text_from_url(num_input,url_input):
                 continue
         year = t.strftime('%Y')
         month = t.strftime('%m')
-        
         if day == 0:
             year = "X"
             month = "X"
@@ -95,14 +84,15 @@ async def get_text_from_url(num_input,url_input):
         #beautifulsoup - country name
         country = soup.find(style="text-align:center;width:100%").get_text(strip=True)
 
-        # n=[] #refresh
-        n = [{"Coronavirus Cases":cases,
+        #save coronavirus cases, deaths, recovered, new cases
+        country_data = [{"Coronavirus Cases":cases,
         "Deaths":deaths,
         "Recovered":recovered,
         f"New cases on {t.strftime('%m')} {year}-{month}-{day}":newcases}]
 
-        info.update({f"{num_input+1} {country}":n})
+        info.update({f"{num_input} {country}":country_data})
     except:
+        #terminate the program when a user inputs wrong country name text on terminal
         logging.info("Incorrect country name")
         sys.exit()
 
@@ -110,14 +100,10 @@ async def get_text_from_url(num_input,url_input):
 async def main():
     urls = ['https://www.worldometers.info/coronavirus/country/'+country for country in countries]
 
-    logging.info("program started\n")
-    futures = [asyncio.create_task(get_text_from_url(num,url)) for num,url in enumerate(urls)]
-                                                           # 태스크(퓨처) 객체를 리스트로 만듦
-    result = await asyncio.gather(*futures)                # 결과를 한꺼번에 가져옴
-    logging.info("program ended\n")
-
-    # print(result)
-
+    logging.info("Program started\n")
+    futures = [asyncio.create_task(get_text_from_url(num,url)) for num,url in enumerate(urls, start=1)]
+    result = await asyncio.gather(*futures)                
+    logging.info("Program ended\n")
 
 
 """Quart web programming"""
@@ -125,23 +111,21 @@ async def main():
 
 app = Quart(__name__)
 
-
 @app.route("/get_result")
 async def get_result():
     return jsonify({"Coronavirus situation":info})
 
 
-
 if __name__ == "__main__":
-    
+    #show possible country list on terminal
     show_country_list()
     
-    countries = sys.stdin.readline().split() #get inputs from terminal in the form of list
-    print(countries)
+    #get inputs from terminal in list
+    countries = sys.stdin.readline().split()
+    logging.info(countries)
 
     info={}
 
-    
     start = t.time()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
@@ -149,12 +133,4 @@ if __name__ == "__main__":
     logging.info(f'time taken: {end-start}')
     webbrowser.open("http://127.0.0.1:5000/get_result")
     app.run(debug=True)
-    # server = Process(target=app.run(debug=True))
-    # server.start()
-    # server.terminate()
-    # server.join()
-
-
-    #country 목록 확인
-    #refresh
     
